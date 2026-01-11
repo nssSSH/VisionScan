@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VisionScan | Image Analysis</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  font-family: "Poppins", "Ubuntu", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+  overflow-x: hidden;
+}
+
+header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+main {
+  max-width: 900px;
+  margin: 4rem auto;
+  padding: 0 2rem;
+}
+
+h1 { font-size: 2.5rem; }
+.subtitle { color: #6b7280; margin-bottom: 2rem; }
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+}
+
+.upload-box {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 3rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+button {
+  margin-top: 1.5rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #111827;
+  margin-left: 1rem;
+  display: none;
+}
+
+.result {
+  margin-top: 2rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  min-height: 2rem;
+}
+
+.loading {
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Confetti */
+.confetti {
+  position: fixed;
+  top: -20px;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>VisionScan</div>
+  <div>Dashboard</div>
+</header>
+
+<main>
+  <h1>Advanced Image Analysis</h1>
+  <div class="subtitle">Upload an image for automated visual recognition.</div>
+
+  <div class="card">
+    <div class="upload-box">
+      <input type="file" id="file" accept="image/*">
+      <br>
+      <button onclick="analyze()">Analyze</button>
+      <button class="secondary" id="downloadBtn" onclick="downloadCert()">Download Report</button>
+    </div>
+
+    <div id="result" class="result"></div>
+  </div>
+</main>
+
+<audio id="dawgSong" src="dawg.mp3"></audio>
+
+<script>
+let uploadedImage = null;
+
+document.getElementById("file").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => uploadedImage = reader.result;
+  reader.readAsDataURL(file);
+});
+
+function analyze() {
+  const result = document.getElementById("result");
+  const downloadBtn = document.getElementById("downloadBtn");
+
+  result.textContent = "Processing image…";
+  result.classList.add("loading");
+  downloadBtn.style.display = "none";
+
+  setTimeout(() => {
+    result.classList.remove("loading");
+    result.innerHTML = "Yeah… that’s a dawg. 🐶🐕🐕‍🦺🐾";
+    downloadBtn.style.display = "inline-block";
+
+    playSong();
+    launchConfetti();
+  }, 1800);
+}
+
+function playSong() {
+  const song = document.getElementById("dawgSong");
+  song.currentTime = 0;
+  song.play().catch(() => {});
+}
+
+function launchConfetti() {
+  for (let i = 0; i < 120; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti";
+    piece.textContent = ["🐶","🐕","🐕‍🦺","🐾"][Math.floor(Math.random() * 4)];
+    piece.style.left = Math.random() * window.innerWidth + "px";
+    piece.style.fontSize = Math.random() * 24 + 16 + "px";
+    piece.style.animationDuration = Math.random() * 2 + 2 + "s";
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 4000);
+  }
+}
+
+function downloadCert() {
+  if (!uploadedImage) return alert("Upload an image first!");
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = 1000;
+  canvas.height = 1200;
+
+  // background
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const img = new Image();
+  img.onload = () => {
+    // draw image centered
+    const scale = Math.min(800 / img.width, 800 / img.height);
+    const w = img.width * scale;
+    const h = img.height * scale;
+    ctx.drawImage(img, (canvas.width - w)/2, 150, w, h);
+
+    // text
+    ctx.fillStyle = "#111827";
+    ctx.font = "bold 72px Poppins, Ubuntu, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Certified Perfect Dawg", canvas.width / 2, canvas.height - 120);
+
+    ctx.font = "28px Poppins, Ubuntu, sans-serif";
+    ctx.fillStyle = "#6b7280";
+    ctx.fillText("VisionScan Verification", canvas.width / 2, canvas.height - 70);
+
+    // download
+    const link = document.createElement("a");
+    link.download = "certified-dawg.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+  img.src = uploadedImage;
+}
+</script>
+
+</body>
+</html>
